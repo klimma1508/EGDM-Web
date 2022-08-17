@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>Login</title>
+
+    </head>
+    <body>
+        <% if(error != ""){%>
+            <div class="err">
+                <h1> <%=error%> </h1>
+            </div>
+        <% }%>
+
+        <div class="form">
+            <form action="/login" method="post">
+                <input type="text" name="user" id="user" placeholder="ENTER USERNAME">
+                <br>
+                <input type="password" name="password" id="password" placeholder="ENTER PASSWORD">
+                <br>
+                <input type="submit" value="Login">
+                <input type="checkbox" name="remember" id="remember">
+                <label for="remember">remember me</label>
+            </form>
+
+        </div>
+    </body>
+</html>
