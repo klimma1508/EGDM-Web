@@ -66,7 +66,6 @@ function checkUser(req, res) {
 
 app.get("/", (req, res) => {
   var result = checkUser(req, res)
-  console.log("result:  " + result)
   if(result){
       res.locals.user = req.cookies.user
       res.redirect("/home")
@@ -117,16 +116,10 @@ app.post("/login", urlencodedParser, (req, res) => {
       })
   }
 
-
+  console.log("SQL pass")
   try{
-      con.connect(function(err) {
-
           var result = conSync.query("SELECT * FROM Accounts WHERE username = '" + user + "'")
           
-            
-  
-
-  
             try{
                   if (result[0].password == password){
                       res.locals.user = user
@@ -157,7 +150,7 @@ app.post("/login", urlencodedParser, (req, res) => {
                   })
               }
           
-        });
+        
   }catch(err){
       error = "Wrong username or password"
       return res.render("login", {
