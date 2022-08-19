@@ -47,7 +47,7 @@ function checkUser(req, res) {
   if (req.cookies.user) {
       const result = conSync.query("SELECT * FROM Accounts WHERE username = '" + req.cookies.user + "'")
       try{
-              console.log(result)
+              
                            
               return result[0].username == req.cookies.user
           
@@ -91,9 +91,7 @@ app.post("/login", urlencodedParser, (req, res) => {
   var error = ""
   let { user, password, remember } = req.body
 
-  console.log(user)
-  console.log(password)
-  console.log(remember? true : false)
+  
 
   if (user == "" && password == ""){
       error = "username and password is required"
@@ -116,7 +114,7 @@ app.post("/login", urlencodedParser, (req, res) => {
       })
   }
 
-  console.log("SQL pass")
+  
   try{
           var result = conSync.query("SELECT * FROM Accounts WHERE username = '" + user + "'")
           
@@ -166,7 +164,6 @@ app.post("/login", urlencodedParser, (req, res) => {
 
 app.get("/home", (req, res) => {
   var result = checkUser(req, res)
-  console.log("result:  " + result)
   if(result){
       res.locals.user = req.cookies.user
       return res.render("home", {
