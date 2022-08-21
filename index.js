@@ -12,12 +12,28 @@ var bodyParser = require('body-parser')
 
 const mysqlSync = require("sync-mysql")
 
+var nodemailer = require('nodemailer');
+
+
 var conSync = new mysqlSync({
   host: "192.168.0.100",
   user: "root",
   password: "Synology123.",
   database: "EGDM"
 });
+
+
+
+//Email
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'martin.klims1@gmail.com',
+      pass: 'uzolcauqngghntly'
+    }
+  });
+
 
 const cookieParser = require("cookie-parser")
 
@@ -40,6 +56,11 @@ app.use(
   })
 )
 
+
+//variables
+
+var username_public = ""
+var level_public = ""
 
 
 //Ceck user if is login
@@ -67,7 +88,7 @@ function checkUser(req, res) {
 app.get("/", (req, res) => {
   var result = checkUser(req, res)
   if(result){
-      res.locals.user = req.cookies.user
+      username_public = req.cookies.user
       res.redirect("/home")
   }
   else{
@@ -115,24 +136,26 @@ app.post("/login", urlencodedParser, (req, res) => {
   }
 
   
-  try{
+  try{  
           var result = conSync.query("SELECT * FROM Accounts WHERE username = '" + user + "'")
-          
+          console.log(result)
+          console.log(password)
+          console.log(result[0].password == password)
             try{
                   if (result[0].password == password){
-                      res.locals.user = user
-                      if(remember){
-                          res.cookie(`user`,user,{
-                              secure: false,
-                              httpOnly: false,
-                              sameSite: 'lax'
+                      username_public = user
+                      level_public = result[0].level
+                      if(true){
+                          res.cookie("user",user,{
+                                secure: false,
+                                httpOnly: false,
+                                sameSite: 'lax'
                           });
+                          res.cookie("level", result[0].level);
                       }
 
 
-                      return res.render("home", {
-                          user
-                      })
+                      res.redirect("/home")
                   }
                   else{
           
@@ -165,9 +188,11 @@ app.post("/login", urlencodedParser, (req, res) => {
 app.get("/home", (req, res) => {
   var result = checkUser(req, res)
   if(result){
-      res.locals.user = req.cookies.user
+      
+      console.log(username_public)
       return res.render("home", {
-          user: res.locals.user,
+          user: username_public,
+          level: level_public,
           svatek: "svatek",
           dovolena: "dovolena",
           prescas: "prescas"
@@ -186,13 +211,62 @@ app.get("/logout", (req, res) => {
     
   //delete cookies
   res.clearCookie("user")
-  res.locals.username = ""
+  username_public = ""  
+  level_public = ""
   res.redirect("/")
+})
+
+app.get("/create_user", (req, res) => {
+    
+
+    return res.render("create_user", {
+        error: ""
+    })
+})
+
+app.post("/create_user", urlencodedParser, (req, res) => {
+    
+    let { uname, fname, lname, level, dovolena, phone, email} = req.body
+
+    var password = Math.random().toString(36).slice(-8);
+    if(uname == "" || fname == "" || lname == "" || level == "" || dovolena == "" || phone == "" || email  == ""){
+        return res.render("create_user", {
+        error: "Error something is missing"
+        })
+    }
+
+    var result = conSync.query("INSERT INTO Accounts VALUES ('0','" + uname +"','" + password +"','" + level +"','" + dovolena +"','" + fname +"','"+ lname +"','" + email +"', '"+ phone +"')")
+    console.log(result)
+
+    var mailOptions = {
+        from: 'martin.klims1@gmail.com',
+        to: email,
+        subject: 'User registration EG.D Montáže',
+        text: "Hello, registration success \n your username is: " + uname + " \n your password: " + password + "\n You can login on http://localhost:3000"
+      };
+      
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+
+
+    return res.render("create_user", {
+        error: result
+    })
+
+
+    
+
+
 })
 
 
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(8080);
-httpsServer.listen(8443);
+httpServer.listen(3000);
+httpsServer.listen(3443);
