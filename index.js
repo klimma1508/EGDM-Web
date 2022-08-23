@@ -280,6 +280,15 @@ app.get("/rm_user", (req,res) => {
   })
 })
 
+app.post("/rm_user", urlencodedParser , (req,res) => {
+
+    let { user } = req.body
+
+    //var result = conSync.query("SELECT username FROM Accounts")
+  
+    console.log("remove: " + user)
+    return res.end('success')
+  })
 
 app.get("/hodiny", (req,res) => {
 
