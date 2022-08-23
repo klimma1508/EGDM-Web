@@ -226,14 +226,20 @@ app.get("/create_user", (req, res) => {
 
 app.post("/create_user", urlencodedParser, (req, res) => {
     
-    let { uname, fname, lname, level, dovolena, phone, email} = req.body
+    let { fname, lname, level, dovolena, phone, email} = req.body
 
     var password = Math.random().toString(36).slice(-8);
-    if(uname == "" || fname == "" || lname == "" || level == "" || dovolena == "" || phone == "" || email  == ""){
+    var uname = uname = lname.slice(0,4) + fname.slice(0,2)
+    if(fname == "" || lname == "" || level == "" || dovolena == "" || phone == "" || email  == ""){
         return res.render("create_user", {
         error: "Error something is missing"
         })
     }
+
+    conSync.query("CREATE TABLE 'hodiny_" + uname + "' AS SELECT * FROM Hodiny")
+
+
+
 
     var result = conSync.query("INSERT INTO Accounts VALUES ('0','" + uname +"','" + password +"','" + level +"','" + dovolena +"','" + fname +"','"+ lname +"','" + email +"', '"+ phone +"')")
     console.log(result)
@@ -255,7 +261,7 @@ app.post("/create_user", urlencodedParser, (req, res) => {
 
 
     return res.render("create_user", {
-        error: result
+        error: "Success"
     })
 
 
@@ -264,6 +270,25 @@ app.post("/create_user", urlencodedParser, (req, res) => {
 
 })
 
+app.get("/rm_user", (req,res) => {
+
+  var result = conSync.query("SELECT username FROM Accounts")
+
+
+  return res.render("rm_user",{
+    data: result
+  })
+})
+
+
+app.get("/hodiny", (req,res) => {
+
+  //var result = conSync.query("SELECT * FROM Accounts WHERE username = '" + user + "'")
+
+  return res.render("hodiny_user", {
+    data: "Work in progress"
+  })
+})
 
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);

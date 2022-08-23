@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>Remove user</title>
+        <div id="mydiv" data=<%- JSON.stringify(data) %>></div>
+
+        <script>
+
+
+            function load(){
+                try{
+                    var table_html = ""
+                    var json_data = JSON.parse(document.getElementById('mydiv').dataset.test)
+                    var json_len = Object.keys(json_data).length
+                    console.log(json_data)
+                    console.log(json_len)
+                    var table = document.getElementById('table')
+                    var rIndex
+                    for(var i = 0; i <= json_len; i++)
+                    {
+                        table_html += "<tr>"
+                        table_html += "<th>" + json_data[i].username + "</th>"
+                        table_html += "</tr>"
+                    }
+        
+                    table.innerHTML = table_html
+        
+                    for(var i = 1; i < table.rows.length; i++)
+                    {
+                        table.rows[i].onclick = function()
+                        {
+                            document.getElementById("debug").innerHTML = this.cells[0].innerHTML
+                        };
+                    }
+                }
+        
+                catch (error) {
+                    
+                }
+            }
+        
+            load()
+        </script>
+
+        
+    </head>
+    <body onload="load()">
+        <H1 id="debug">work in progress</H1>
+        <br>
+        <br>
+
+        
+
+        <table id="table">
+                       
+        </table>
+    </body>
+</html>
+
