@@ -6,7 +6,7 @@
 
     </head>
 
-    
+
     <body>
             <p> Hello <%=user%> </p>
         <p>your level is: <%=level%></p>
@@ -24,6 +24,9 @@
         <% if(level >= 3 ){ %> 
         <form action="create_user">
             <button class="button">Create new user</button>
+        </form>
+        <form action="rmuser">
+            <button class="button">Remove user</button>
         </form>
         <% } %> 
     </body>

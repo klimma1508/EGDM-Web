@@ -3,11 +3,32 @@
 <html lang="en">
     <head>
         <title>Hodiny</title>
-        <div id="mydiv" data-test=<%= data %>></div>
+        <div id="mydiv" data-test=<%- data %>></div>
     </head>
         
     <body onload="table_load()">
         <H1 id="test">WIP</H1>
+        <form action="/hodiny" method="post">
+            <input type="text" name="stavba" id="stavba">
+            <label for="stavba">stavba</label>
+            <br>
+            <input type="date" name="date" id="date">
+            <label for="date">datum</label>
+            <br>
+            <input type="time" name="od" id="od">
+            <label for="od">OD</label>
+
+            <input type="time" name="Do" id="Do">
+            <label for="Do">DO</label>
+
+            <button type="submit">Submit</button>
+        </form>
+        <br>
+        <br>
+
+        <label for="month">Select month</label>
+        <input type="month" name="month" id="month" onchange="get_table()">
+
         <table id="table">
 
         </table>
@@ -16,30 +37,114 @@
 </html>
 
 <script>
-    function table_load(){
-        var json_data = document.getElementById('mydiv').dataset.test
-        document.getElementById("test").innerHTML = json_data
+    function get_table(){
+        mnth = document.getElementById('month')
+    
+
+    
 
 
-        /*try{
+        var xhttp = new window.XMLHttpRequest()
+        xhttp.open("POST", "/load_hodiny", true)
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                // Typical action to be performed when the document is ready:
+                table_load(this.response)
+                }
+            };
+        
+            xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        //xhttp.send(user)
+        
+        xhttp.send("month=" + mnth.value.toString())
+    }
+
+
+
+
+    function table_load(json_data = ""){
+        
+        if(json_data == ""){
+            json_data = JSON.parse(document.getElementById('mydiv').dataset.test)
+        }
+        else{
+            json_data = JSON.parse(json_data)
+        }
+        
+
+        //document.getElementById("test").innerHTML = json_data
+        
+        
+        
+
+        
+
+        try{
                 var table = document.getElementById('table');
+
+                var table_str = ""
+                var json_len = Object.keys(json_data).length
+                //document.getElementById("test").innerHTML = JSON.stringify(json_data[0].Datum)
+                
+                for(var i = 0; i <= json_len-1; i++){
+                    var date = JSON.stringify(json_data[i].Datum)
+                    date = date.split("T")
+                    date = date[0]
+                    date = date.split("-")
+                    
+                    //console.log(date[2])
+                    date = new Date(parseInt(date[0].substring(1)),parseInt(date[1])-1, parseInt(date[2])+1)
+                    
+                    //console.log(date.getDay())
+                    
+                    if(json_data[i].Pohotovost){
+                        table_str += "<tr class='pohotovost'>\n"
+                    }
+                    else{
+                        table_str += "<tr>\n"
+                    }
+                    table_str += "<th> " + json_data[i].Pohotovost.toString() + "</th> \n"
+                    table_str += "<th> " + date.getDate() + "-" + (parseInt(date.getMonth())+1).toString() + "-" + date.getFullYear() + " </th>\n"
+                    if(date.getDay() === 0 && json_data[i].lokace == ""){
+                        table_str += "<th> " + "00:00" + " - " + "00:00" + " </th>\n"
+                        table_str += "<th> " + json_data[i].hodiny + "&emsp; (" + json_data[i].prescas + ") </th>\n"
+                        table_str += "<th> " + "NE" + " </th>\n"
+                    }
+
+                    else if(date.getDay() === 6 && json_data[i].lokace == ""){
+                        table_str += "<th> " + "00:00" + " - " + "00:00" + " </th>\n"
+                        table_str += "<th> " + json_data[i].hodiny +"&emsp; (" + json_data[i].prescas + ") </th>\n"
+                        table_str += "<th> " + "NE" + " </th>\n"
+
+                    }
+                    else{
+                        table_str += "<th> " + json_data[i].od + " - " + json_data[i].do + " </th>\n"
+                        table_str += "<th> " + json_data[i].hodiny + " &emsp; (" + json_data[i].prescas + ") </th>\n"
+                        table_str += "<th> " + json_data[i].lokace + " </th>\n"
+                    }
+                    table_str += "<th> " + date.getDay() + " </th>\n"
+                    table_str += "</tr>"
+                }
+                
+                table.innerHTML = table_str
+                
+
+                
+
                 var rIndex
                 for(var i = 1; i < table.rows.length; i++)
                 {
                     table.rows[i].onclick = function()
                     {
-                        document.forms['myForm']['ID'].value = this.cells[0].innerHTML;
-                        document.forms['myForm']['SKLAD'].value = this.cells[2].innerHTML;
-                        document.forms['myForm']['Name'].value = this.cells[1].innerHTML;
-                        document.forms['myForm']['PCS'].value = this.cells[3].innerHTML;
-                        document.forms['myForm']['MinPCS'].value = this.cells[4].innerHTML;
+                        
                     };
                 }
             }
 
             catch (error) {
-                
-            }*/
+                console.log(error)
+            }
     }
 </script>
 
@@ -56,5 +161,20 @@
         margin: 4px 2px;
         transition-duration: 0.4s;
         cursor: pointer;
+    }
+
+    table, th, td{
+        border: 2px solid black;
+        border-collapse: collapse;
+    }
+    table{
+        width: 100%;
+    }
+
+    tr:hover{
+        background-color: red;
+    }
+    .pohotovost{
+        background-color: rgba(0, 255, 0, 0.5);
     }
 </style>

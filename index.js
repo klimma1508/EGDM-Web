@@ -182,9 +182,6 @@ app.post("/login", urlencodedParser, (req, res) => {
 
 })
 
-
-
-
 app.get("/home", (req, res) => {
   var result = checkUser(req, res)
   if(result){
@@ -205,7 +202,6 @@ app.get("/home", (req, res) => {
 
   
 })
-
 
 app.get("/logout", (req, res) => {
     
@@ -229,14 +225,15 @@ app.post("/create_user", urlencodedParser, (req, res) => {
     let { fname, lname, level, dovolena, phone, email} = req.body
 
     var password = Math.random().toString(36).slice(-8);
-    var uname = uname = lname.slice(0,4) + fname.slice(0,2)
+    var uname = (lname.slice(0,4) + fname.slice(0,2)).toLowerCase()
+    
     if(fname == "" || lname == "" || level == "" || dovolena == "" || phone == "" || email  == ""){
         return res.render("create_user", {
         error: "Error something is missing"
         })
     }
 
-    conSync.query("CREATE TABLE 'hodiny_" + uname + "' AS SELECT * FROM Hodiny")
+    conSync.query("CREATE TABLE hodiny_" + uname +" AS SELECT * FROM Hodiny")
 
 
 
@@ -270,7 +267,7 @@ app.post("/create_user", urlencodedParser, (req, res) => {
 
 })
 
-app.get("/rm_user", (req,res) => {
+app.get("/rmuser", (req,res) => {
 
   var result = conSync.query("SELECT username FROM Accounts")
 
@@ -280,22 +277,113 @@ app.get("/rm_user", (req,res) => {
   })
 })
 
-app.post("/rm_user", urlencodedParser , (req,res) => {
+app.post("/rmuser", urlencodedParser , (req,res) => {
 
-    let { user } = req.body
+  user = req.body.user
 
-    //var result = conSync.query("SELECT username FROM Accounts")
-  
-    console.log("remove: " + user)
+    conSync.query("DELETE FROM Accounts WHERE username = '" + user + "'")
+
+    try{
+      conSync.query("DROP TABLE 'hodiny_" + user + "'")
+    }
+    catch(error){
+      console.log(error)
+    }
+    
     return res.end('success')
   })
 
-app.get("/hodiny", (req,res) => {
+app.post("/load_hodiny", urlencodedParser, (req, res) => {
+  if(username_public == "" || req.cookies.user != ""){
+    username_public = req.cookies.user
+    level_public = req.cookies.level
+  }
+
+  var { month } = req.body
+
+
+
+  console.log(month)
+  month = month.split("-")
+  var year = parseInt(month[0])
+  month = parseInt(month[1])
+  const lastDay = new Date(year, month, 0);
+
+  
+  var mindate = year + "-" + month + "-01";
+  var maxdate = year + "-" + month + "-" + lastDay.getDate() ;
+  sql = "SELECT * FROM hodiny_" + username_public + " WHERE Datum BETWEEN '" + mindate + "' AND '" + maxdate + "' ORDER BY Datum" ;
+console.log(sql)
+
+  //var result = conSync.query("SELECT * FROM hodiny_" + username_public + " ORDER BY Datum" )
+  var result = conSync.query(sql)
+  console.log(result)
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(result));
+})
+
+
+app.get("/hodiny", function (req,res) {
 
   //var result = conSync.query("SELECT * FROM Accounts WHERE username = '" + user + "'")
+  //console.log(username_public )
+  var result = conSync.query("SELECT * FROM hodiny_" + username_public + " ORDER BY Datum" )
 
+  //console.log(JSON.stringify(result).replace(/ /g,"_"))
+  
   return res.render("hodiny_user", {
-    data: "Work in progress"
+    data: JSON.stringify(result).replace(/ /g,"_"),
+    msg: ""
+  })
+})
+
+
+app.post("/hodiny", urlencodedParser, (req,res) => {
+
+  let { stavba, date, od, Do } = req.body
+
+  if(stavba == ""|| date == ""|| od == ""|| Do == ""){
+    return res.render("hodiny_user", {
+      data: "",
+      msg: "Error, Something is missing"
+    })
+
+    
+
+  }
+
+  const today = new Date();
+  var TA = new Date("July 4 1776 " + od)
+  var TB = new Date("July 4 1776 " + Do)
+  var hodiny = ((TB-TA)/3600000)-0.5
+
+  console.log(hodiny)
+
+  if(parseFloat(hodiny) >= parseFloat(8.00)){
+    
+    var prescas = hodiny - 8
+    hodiny = 8
+  }
+  else{
+    var prescas = 0
+  }
+  console.log(prescas)
+  var diff = prescas
+
+  var diffM = diff % 1
+  var diffH = diff - diffM
+  console.log(diffH + ":" + Math.round(60 * diffM))
+  prescas = diffH + ":" + Math.round(60 * diffM)
+
+  var data = {
+    od: TA,
+    do: TB,
+    hodiny: hodiny,
+    prescas: prescas
+  }
+  
+  return res.render("hodiny_user", {
+    data: data
   })
 })
 
