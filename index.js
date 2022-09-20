@@ -299,7 +299,7 @@ app.post("/load_hodiny", urlencodedParser, (req, res) => {
     level_public = req.cookies.level
   }
 
-  var { month } = req.body
+  var { month, username } = req.body
 
 
 
@@ -337,10 +337,31 @@ app.get("/hodiny", function (req,res) {
   })
 })
 
+app.get("/hodiny_master", function (req,res) {
+  var result = conSync.query("SELECT * FROM Accounts")
+  var users = [];
+  
+  //console.log(result)
+
+  for(var i = 0; i < Object.keys(result).length; i++){
+    users.push(result[i].username)
+  }
+
+  console.log(users)
+  
+  return res.render("hodiny_master", {
+    users: users
+  })
+})
+
 
 app.post("/hodiny", urlencodedParser, (req,res) => {
 
   let { stavba, date, od, Do } = req.body
+
+  if(username_public == ""){
+    username_public = req.cookies.user
+  }
 
   if(stavba == ""|| date == ""|| od == ""|| Do == ""){
     return res.render("hodiny_user", {
@@ -382,6 +403,10 @@ app.post("/hodiny", urlencodedParser, (req,res) => {
     prescas: prescas
   }
   
+  var result = conSync.query(`INSERT INTO hodiny_${username_public} (Pohotovost, Datum, od, do, lokace) Values('0','${date}','${od}:00','${Do}:00','${stavba}')`)
+  console.log("\n\n")
+  console.log(result)
+  //console.log(`INSERT INTO hodiny_${username_public} (Pohotovost, Datum, od, do, lokace) Values('0','${date}','${od}:00','${Do}:00','${stavba}')`)
   return res.render("hodiny_user", {
     data: data
   })

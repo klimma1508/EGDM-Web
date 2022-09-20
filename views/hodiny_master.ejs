@@ -2,11 +2,10 @@
 
 <html lang="en">
     <head>
-        <title>Hodiny</title>
-        <div id="mydiv" data-test=<%- data %>></div>
+        <title>Hodiny Master</title>
     </head>
         
-    <body onload="table_load()">
+    <body>
         <H1 id="test">WIP</H1>
         <form action="/hodiny" method="post">
             <input type="text" name="stavba" id="stavba">
@@ -28,8 +27,21 @@
         <a href="/home">Back</a>
         <br>
 
-        <label for="month">Select month</label>
-        <input type="month" name="month" id="month" placeholder="Year-month ex. 2022-08" onchange="get_table()">
+        
+
+        <form action="/hodiny_master" id="hodiny" name="hodiny">
+            <label for="user">User</label>
+            <select id="user" name="user">
+                <% for(var i = 0; i < users.length; i++) { %>
+                  <option value='<%= users[i] %>'><%= users[i] %></option>
+                <% } %>
+            </select>
+            <label for="month">Select month</label>
+            <input type="month" name="month" id="month" placeholder="Year-month ex. 2022-08">
+            <input type="submit">
+          </form>
+
+        
 
         <table id="table">
 
@@ -39,13 +51,17 @@
 </html>
 
 <script>
+
+    
     const d = new Date();
     let month = d.getMonth();
     if(month < 10){
         month = "0" + month
     }   
     let year = d.getFullYear();
-    document.getElementById("month").value = year + '-' + month;
+    document.hodiny.month.value = year + '-' + month;
+    
+    
 
 
     function get_table(){
