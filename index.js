@@ -304,6 +304,17 @@ app.post("/load_hodiny", urlencodedParser, (req, res) => {
 
 
   console.log(month)
+  console.log(username)
+
+  
+
+  if(username == undefined){
+    username = username_public
+  }
+  if(username == "admin"){
+    return 0
+  }
+
   month = month.split("-")
   var year = parseInt(month[0])
   month = parseInt(month[1])
@@ -312,7 +323,7 @@ app.post("/load_hodiny", urlencodedParser, (req, res) => {
   
   var mindate = year + "-" + month + "-01";
   var maxdate = year + "-" + month + "-" + lastDay.getDate() ;
-  sql = "SELECT * FROM hodiny_" + username_public + " WHERE Datum BETWEEN '" + mindate + "' AND '" + maxdate + "' ORDER BY Datum" ;
+  sql = "SELECT * FROM hodiny_" + username + " WHERE Datum BETWEEN '" + mindate + "' AND '" + maxdate + "' ORDER BY Datum" ;
 console.log(sql)
 
   //var result = conSync.query("SELECT * FROM hodiny_" + username_public + " ORDER BY Datum" )
